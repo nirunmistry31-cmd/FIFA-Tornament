@@ -2,159 +2,798 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIFA Tournament – 12 Players</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FC Tournament</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --green: #00c853; --gold: #ffd600; --dark: #0a0f0a;
-    --card: #111811; --card2: #161e16; --border: #1e2e1e;
-    --text: #e8f5e9; --muted: #5a7a5a; --red: #ff1744; --accent: #00e676;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--dark); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background:
-      repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(0,200,83,0.03) 80px, rgba(0,200,83,0.03) 81px),
-      repeating-linear-gradient(0deg,  transparent, transparent 80px, rgba(0,200,83,0.03) 80px, rgba(0,200,83,0.03) 81px);
-    pointer-events: none; z-index: 0;
-  }
-  .app { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 0 12px 60px; }
+:root {
+  --lime: #C8FF00;
+  --lime-dim: rgba(200,255,0,0.12);
+  --lime-glow: rgba(200,255,0,0.25);
+  --bg: #111111;
+  --bg2: #1a1a1a;
+  --bg3: #222222;
+  --card: #181818;
+  --border: #2a2a2a;
+  --text: #ffffff;
+  --muted: #666666;
+  --muted2: #333333;
+  --red: #ff3b3b;
+  --gold: #FFD700;
+  --nav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-  header { text-align: center; padding: 32px 0 24px; }
-  header .trophy { font-size: 42px; display: block; margin-bottom: 6px; }
-  header h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 7vw, 4.2rem); letter-spacing: 4px; color: var(--gold); line-height: 1; text-shadow: 0 0 40px rgba(255,214,0,0.3); }
-  header p { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; letter-spacing: 6px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; background: var(--bg); }
 
-  .tabs { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
-  .tab { flex: 1; padding: 10px 4px; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; background: none; border: none; color: var(--muted); cursor: pointer; border-radius: 7px; transition: all .2s; }
-  .tab.active { background: var(--green); color: #000; font-weight: 700; }
-  .tab:hover:not(.active) { color: var(--text); }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .panel { display: none; } .panel.active { display: block; }
+/* ── STADIUM BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url('IMG_7496.JPG');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  opacity: 0.13;
+  filter: saturate(0.4) brightness(0.6);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  @media(max-width:500px) { .setup-grid { grid-template-columns: 1fr; } }
-  .player-input { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
-  .player-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--green); width: 28px; }
-  .player-input input { background: none; border: none; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.95rem; flex: 1; outline: none; }
-  .player-input input::placeholder { color: var(--muted); }
+/* ── NOISE TEXTURE OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: .4;
+}
 
-  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; transition: all .2s; }
-  .btn-primary { background: var(--green); color: #000; }
-  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
-  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
-  .center { text-align: center; }
+/* ══════════════════════════════
+   LAYOUT
+══════════════════════════════ */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
 
-  .groups-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
-  .group-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .group-header { background: linear-gradient(135deg, #0d1f0d, #162816); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-  .group-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 3px; color: var(--gold); }
+.screen {
+  flex: 1;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  display: none;
+  flex-direction: column;
+  animation: slide-up .22s cubic-bezier(.22,1,.36,1) both;
+}
+.screen.active { display: flex; }
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  .standings { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  .standings th { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 2px; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; padding: 6px 8px; text-align: center; }
-  .standings th:first-child { text-align: left; }
-  .standings td { padding: 6px 8px; text-align: center; border-top: 1px solid rgba(255,255,255,0.04); }
-  .standings td:first-child { text-align: left; }
-  .standings tr.qualify td { color: var(--accent); }
-  .standings .pts { font-weight: 700; color: var(--gold); }
-  .pos-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 6px; background: var(--border); color: var(--muted); }
-  .pos-1 { background: var(--gold); color: #000; }
-  .pos-2 { background: var(--green); color: #000; }
+/* ══════════════════════════════
+   HEADER
+══════════════════════════════ */
+.header {
+  padding: 52px 20px 20px;
+  position: relative;
+}
+.header-eyebrow {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 5px;
+  color: var(--lime);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.header-title {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 13vw, 3.4rem);
+  line-height: .92;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+.header-title .dim { color: var(--muted); font-weight: 400; }
+.header-title .bright { color: var(--lime); }
+.header-sub {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.header-accent {
+  position: absolute;
+  top: 0; right: 0;
+  width: 3px;
+  height: 80px;
+  background: var(--lime);
+}
 
-  .matches-list { padding: 10px 16px 14px; display: flex; flex-direction: column; gap: 6px; }
-  .match-row { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; }
-  .match-team { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .match-team.right { text-align: right; }
-  .match-score { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .score-input { width: 36px; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; padding: 4px 2px; outline: none; }
-  .score-input:focus { border-color: var(--green); }
-  .score-sep { color: var(--muted); font-family: 'Bebas Neue', sans-serif; }
-  .save-btn { background: none; border: 1px solid var(--green); color: var(--green); border-radius: 5px; padding: 3px 8px; font-size: 0.7rem; letter-spacing: 1px; font-family: 'Barlow Condensed', sans-serif; cursor: pointer; text-transform: uppercase; transition: all .15s; flex-shrink: 0; }
-  .save-btn:hover { background: var(--green); color: #000; }
-  .played-score { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--gold); min-width: 44px; text-align: center; flex-shrink: 0; }
+/* ══════════════════════════════
+   BOTTOM NAV
+══════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  background: #0d0d0d;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0;
+  z-index: 100;
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: var(--nav-h);
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color .15s;
+  position: relative;
+}
+.nav-btn.active { color: var(--lime); }
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--lime);
+}
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav-label { font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; }
 
-  .round-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 3px; color: var(--gold); margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-  .ko-matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
-  .ko-match { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .ko-match-teams { display: flex; flex-direction: column; gap: 8px; }
-  .ko-team-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .ko-team-name { font-size: 0.88rem; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ko-team-name.winner { color: var(--gold); }
-  .ko-score-input { width: 42px; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; padding: 4px; outline: none; flex-shrink: 0; }
-  .ko-score-input:focus { border-color: var(--green); }
-  .vs-line { text-align: center; font-family: 'Barlow Condensed', sans-serif; color: var(--muted); font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 6px; }
-  .ko-save-btn { margin-top: 10px; width: 100%; }
-  .tbd { color: var(--muted); font-style: italic; font-size: 0.85rem; }
+/* ══════════════════════════════
+   SECTION LABELS
+══════════════════════════════ */
+.section-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 0 20px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .champion-banner { text-align: center; padding: 32px 20px; background: linear-gradient(135deg, #1a1500, #0d1f0d); border: 1px solid var(--gold); border-radius: 16px; margin-top: 24px; }
-  .champion-trophy { font-size: 64px; display: block; animation: pulse 1.5s infinite alternate; }
-  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
-  .champion-banner h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 6px; color: var(--muted); margin-top: 8px; }
-  .champion-name { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 10vw, 4rem); color: var(--gold); letter-spacing: 4px; }
+/* ══════════════════════════════
+   SETUP SCREEN
+══════════════════════════════ */
+.setup-list {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  height: 52px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.player-row:focus-within { border-color: var(--lime); }
+.player-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--lime);
+  width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.player-row input {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  flex: 1;
+  outline: none;
+  padding: 0 14px;
+  height: 100%;
+  text-transform: uppercase;
+}
+.player-row input::placeholder { color: var(--muted); font-weight: 400; text-transform: none; }
 
-  .notice { background: rgba(0,200,83,0.07); border: 1px solid rgba(0,200,83,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
-  .notice strong { color: var(--accent); }
-  .section-label { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 4px; text-transform: uppercase; font-size: 0.75rem; color: var(--muted); margin-bottom: 10px; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+/* ══════════════════════════════
+   BUTTONS
+══════════════════════════════ */
+.btn-area { padding: 0 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 24px;
+  transition: all .15s;
+  border-radius: 0;
+}
+.btn-lime { background: var(--lime); color: #111; flex: 1; }
+.btn-lime:active { transform: scale(.97); filter: brightness(1.1); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:active { border-color: var(--red); color: var(--red); }
+.btn-sm { height: 40px; font-size: 0.75rem; padding: 0 16px; }
+.btn-block { width: 100%; }
+
+.notice {
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  background: var(--lime-dim);
+  border-left: 3px solid var(--lime);
+  font-size: 0.82rem;
+  letter-spacing: .3px;
+  color: rgba(255,255,255,.7);
+  line-height: 1.5;
+}
+.notice strong { color: var(--lime); }
+
+/* ══════════════════════════════
+   GROUP CARDS
+══════════════════════════════ */
+.groups-grid {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.group-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  animation: slide-up .3s cubic-bezier(.22,1,.36,1) both;
+}
+.group-card:nth-child(2) { animation-delay: .07s; }
+.group-card:nth-child(3) { animation-delay: .14s; }
+.group-card:nth-child(4) { animation-delay: .21s; }
+
+.group-bg-letter {
+  position: absolute;
+  right: -8px; top: -16px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,.03);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -4px;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+.group-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+.group-progress {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+/* STANDINGS TABLE */
+.standings { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.standings thead tr { border-bottom: 1px solid var(--border); }
+.standings th {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 8px;
+  text-align: center;
+  font-weight: 500;
+}
+.standings th:first-child { text-align: left; padding-left: 14px; }
+.standings td {
+  padding: 8px 8px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,.04);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.standings td:first-child { text-align: left; padding-left: 14px; }
+.standings tr.qualify-1 td { color: var(--text); }
+.standings tr.qualify-1 td:first-child { color: var(--lime); }
+.standings tr.qualify-2 td { color: rgba(255,255,255,.75); }
+.standings .pts { font-family: 'Oswald', sans-serif; font-weight: 700; color: var(--lime) !important; font-size: 0.9rem; }
+.standings tr:not(.qualify-1):not(.qualify-2) .pts { color: var(--muted) !important; }
+
+.pos-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 6px;
+  background: var(--muted2);
+  color: var(--muted);
+}
+.pos-chip.p1 { background: var(--lime); color: #111; }
+.pos-chip.p2 { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+
+/* MATCH ROWS */
+.matches-wrap { padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--border); }
+.match-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+.match-name { flex: 1; font-size: 0.78rem; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.match-name.r { text-align: right; }
+.score-pair { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.s-inp {
+  width: 32px; height: 32px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  outline: none;
+  border-radius: 0;
+  transition: border-color .15s;
+  -moz-appearance: textfield;
+}
+.s-inp::-webkit-outer-spin-button,
+.s-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
+.s-inp:focus { border-color: var(--lime); }
+.s-sep { color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+.s-save {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 0 8px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .15s;
+  border-radius: 0;
+}
+.s-save:active { background: var(--lime); color: #111; border-color: var(--lime); }
+.played-score {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--lime);
+  min-width: 42px;
+  text-align: center;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+/* ══════════════════════════════
+   ADVANCE BUTTON
+══════════════════════════════ */
+.advance-wrap { padding: 0 16px; }
+
+/* ══════════════════════════════
+   KNOCKOUT SCREEN
+══════════════════════════════ */
+.ko-section { padding: 0 16px; margin-bottom: 20px; }
+.round-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 5px;
+  color: var(--lime);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.round-title::before { content: ''; width: 3px; height: 14px; background: var(--lime); flex-shrink: 0; }
+.round-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.ko-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ko-grid.single { grid-template-columns: 1fr; max-width: 280px; }
+
+.ko-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  animation: slide-up .25s cubic-bezier(.22,1,.36,1) both;
+}
+.ko-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+.ko-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px;
+  gap: 8px;
+  border-top: 1px solid rgba(255,255,255,.04);
+  min-height: 42px;
+}
+.ko-team:first-of-type { border-top: none; }
+.ko-team.won { background: var(--lime-dim); }
+.ko-team.lost { opacity: .35; }
+.ko-pname {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.ko-team.won .ko-pname { color: var(--lime); }
+.ko-score-disp {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ko-team.won .ko-score-disp { color: var(--lime); }
+.ko-team.lost .ko-score-disp { color: var(--muted); }
+
+.ko-inp {
+  width: 36px; height: 36px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1rem; font-weight: 700;
+  outline: none;
+  border-radius: 0;
+  flex-shrink: 0;
+  -moz-appearance: textfield;
+  transition: border-color .15s;
+}
+.ko-inp::-webkit-outer-spin-button,
+.ko-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ko-inp:focus { border-color: var(--lime); }
+.ko-confirm {
+  width: 100%;
+  height: 40px;
+  background: var(--bg3);
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .15s;
+  border-radius: 0;
+}
+.ko-confirm:active { background: var(--lime); color: #111; }
+
+.ko-tbd {
+  padding: 18px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ══════════════════════════════
+   CHAMPION SCREEN
+══════════════════════════════ */
+.champion-wrap {
+  margin: 0 16px;
+  background: var(--card);
+  border: 1px solid var(--lime);
+  overflow: hidden;
+  position: relative;
+}
+.champ-scanlines {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(200,255,0,0.025) 3px,
+    rgba(200,255,0,0.025) 4px
+  );
+  pointer-events: none;
+}
+.champ-inner {
+  position: relative;
+  padding: 40px 24px 36px;
+  text-align: center;
+}
+.champ-eyebrow {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 8px;
+  color: var(--lime);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  opacity: .8;
+}
+.champ-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(2.4rem, 12vw, 4rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--lime);
+  line-height: .95;
+  animation: champ-flicker 3s ease-in-out infinite alternate;
+}
+@keyframes champ-flicker {
+  0%   { opacity: 1; }
+  92%  { opacity: 1; }
+  93%  { opacity: .85; }
+  94%  { opacity: 1; }
+  97%  { opacity: 1; }
+  98%  { opacity: .9; }
+  100% { opacity: 1; }
+}
+.champ-sub {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  letter-spacing: 5px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.champ-trophy {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  display: block;
+  animation: bounce 1.8s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ══════════════════════════════
+   SAVE FLASH
+══════════════════════════════ */
+.flash {
+  position: fixed;
+  inset: 0;
+  background: var(--lime);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: opacity .06s;
+}
+.flash.go { opacity: .12; }
+
+/* ══════════════════════════════
+   EMPTY STATES
+══════════════════════════════ */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 32px;
+  text-align: center;
+  gap: 12px;
+}
+.empty-icon { font-size: 3rem; opacity: .3; }
+.empty-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.empty-sub { font-size: 0.82rem; color: var(--muted); letter-spacing: .5px; opacity: .7; }
+
+/* ══════════════════════════════
+   UTILITY
+══════════════════════════════ */
+.spacer { height: 20px; }
 </style>
 </head>
 <body>
+
+<div class="flash" id="flash"></div>
+
 <div class="app">
-  <header>
-    <span class="trophy">⚽</span>
-    <h1>FIFA Tournament</h1>
-    <p>12 Players &bull; Group Stage + Knockout</p>
-  </header>
 
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('setup')">Setup</button>
-    <button class="tab" onclick="showTab('groups')">Groups</button>
-    <button class="tab" onclick="showTab('knockout')">Knockout</button>
-  </div>
-
-  <div id="panel-setup" class="panel active">
-    <p class="section-label">Enter Player Names</p>
-    <div class="setup-grid" id="player-inputs"></div>
-    <hr class="divider">
-    <div class="center">
-      <button class="btn btn-primary" onclick="generateTournament()">⚡ Generate Tournament</button>
+  <!-- ── SETUP SCREEN ── -->
+  <div class="screen active" id="screen-setup">
+    <div class="header">
+      <div class="header-accent"></div>
+      <div class="header-eyebrow">EA Sports FC &bull; Tournament</div>
+      <h1 class="header-title">
+        <span class="dim">The</span><br>
+        <span class="bright">Club</span><br>
+        <span class="dim">Is Yours</span>
+      </h1>
+      <p class="header-sub">12 Players &bull; Group Stage + Knockout</p>
     </div>
+
+    <p class="section-label">Squad</p>
+    <div class="setup-list" id="player-inputs"></div>
+
+    <div class="btn-area">
+      <button class="btn btn-lime" onclick="generateTournament()">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#111;fill:none;stroke-width:2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Generate Draw
+      </button>
+      <button class="btn btn-ghost" onclick="resetTournament()" style="width:52px;padding:0;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+      </button>
+    </div>
+    <div class="spacer"></div>
   </div>
 
-  <div id="panel-groups" class="panel">
+  <!-- ── GROUPS SCREEN ── -->
+  <div class="screen" id="screen-groups">
+    <div class="header" style="padding-top:44px;padding-bottom:12px;">
+      <div class="header-accent"></div>
+      <div class="header-eyebrow">Phase 1</div>
+      <h1 class="header-title" style="font-size:clamp(2rem,10vw,2.6rem)">
+        <span class="dim">Group</span><br>
+        <span class="bright">Stage</span>
+      </h1>
+    </div>
+
     <div class="notice">
-      <strong>4 groups of 3</strong>. Top 2 from each group advance — 8 players go straight to the Quarter-Finals.
+      <strong>Top 2</strong> from each group advance to the Quarter-Finals.
     </div>
-    <div class="groups-container" id="groups-container"></div>
-    <hr class="divider">
-    <div class="center">
-      <button class="btn btn-primary" onclick="advanceToKnockout()">Advance to Knockout →</button>
+
+    <p class="section-label">Groups</p>
+    <div class="groups-grid" id="groups-container"></div>
+
+    <div class="advance-wrap">
+      <button class="btn btn-lime btn-block" onclick="advanceToKnockout()">
+        Advance to Knockout
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#111;fill:none;stroke-width:2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
+    <div class="spacer"></div>
   </div>
 
-  <div id="panel-knockout" class="panel">
+  <!-- ── KNOCKOUT SCREEN ── -->
+  <div class="screen" id="screen-knockout">
+    <div class="header" style="padding-top:44px;padding-bottom:12px;">
+      <div class="header-accent"></div>
+      <div class="header-eyebrow">Phase 2</div>
+      <h1 class="header-title" style="font-size:clamp(2rem,10vw,2.6rem)">
+        <span class="dim">Knock</span><br>
+        <span class="bright">Out</span>
+      </h1>
+    </div>
     <div id="knockout-container"></div>
+    <div class="spacer"></div>
   </div>
-</div>
+
+</div><!-- /app -->
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-setup" onclick="showScreen('setup')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-label">Squad</span>
+  </button>
+  <button class="nav-btn" id="nav-groups" onclick="showScreen('groups')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Groups</span>
+  </button>
+  <button class="nav-btn" id="nav-knockout" onclick="showScreen('knockout')">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+    <span class="nav-label">Knockout</span>
+  </button>
+</nav>
 
 <script>
-let state = {
+/* ─── PERSISTENCE ─── */
+const SAVE_KEY = 'fc_tournament_v2';
+const save = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){} };
+const load = () => { try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
+
+/* ─── STATE ─── */
+let state = load() || {
   players: Array.from({length:12}, (_,i) => `Player ${i+1}`),
   groups: [],
   ko: { qf:[], sf:[], final:null, champion:null }
 };
 
+/* ─── FLASH ─── */
+function flash() {
+  const el = document.getElementById('flash');
+  el.classList.add('go');
+  setTimeout(() => el.classList.remove('go'), 120);
+}
+
+/* ─── SCREEN NAV ─── */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+/* ─── SETUP ─── */
 function initSetup() {
   const el = document.getElementById('player-inputs');
   el.innerHTML = '';
   for (let i = 0; i < 12; i++) {
-    el.innerHTML += `
-      <div class="player-input">
-        <span class="player-num">${i+1}</span>
-        <input type="text" id="p${i}" placeholder="Player ${i+1}" value="${state.players[i]}">
-      </div>`;
+    el.innerHTML += `<div class="player-row">
+      <span class="player-num">${i+1}</span>
+      <input type="text" id="p${i}" placeholder="player ${i+1}" value="${state.players[i]}" autocomplete="off" spellcheck="false">
+    </div>`;
   }
 }
 
@@ -168,8 +807,8 @@ function readPlayers() {
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
@@ -178,26 +817,25 @@ function roundRobin(players) {
   const m = [];
   for (let i = 0; i < players.length; i++)
     for (let j = i+1; j < players.length; j++)
-      m.push({h:players[i], a:players[j], hs:'', as:'', played:false});
+      m.push({h: players[i], a: players[j], hs:'', as:'', played:false});
   return m;
 }
 
 function generateTournament() {
   readPlayers();
   const s = shuffle(state.players);
-  // 4 groups of 3 — clean and simple
   state.groups = [
-    { name:'Group A', players:s.slice(0,3),  matches:[] },
-    { name:'Group B', players:s.slice(3,6),  matches:[] },
-    { name:'Group C', players:s.slice(6,9),  matches:[] },
-    { name:'Group D', players:s.slice(9,12), matches:[] }
+    {name:'Group A', letter:'A', players:s.slice(0,3),  matches:[]},
+    {name:'Group B', letter:'B', players:s.slice(3,6),  matches:[]},
+    {name:'Group C', letter:'C', players:s.slice(6,9),  matches:[]},
+    {name:'Group D', letter:'D', players:s.slice(9,12), matches:[]}
   ];
   state.groups.forEach(g => g.matches = roundRobin(g.players));
-  state.ko = { qf:[], sf:[], final:null, champion:null };
-  renderGroups();
-  showTab('groups');
+  state.ko = {qf:[], sf:[], final:null, champion:null};
+  save(); renderGroups(); showScreen('groups');
 }
 
+/* ─── STANDINGS ─── */
 function getStandings(group) {
   const t = {};
   group.players.forEach(p => t[p] = {p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
@@ -207,198 +845,225 @@ function getStandings(group) {
     t[m.h].p++; t[m.a].p++;
     t[m.h].gf += hs; t[m.h].ga += as;
     t[m.a].gf += as; t[m.a].ga += hs;
-    if (hs > as)      { t[m.h].w++; t[m.h].pts+=3; t[m.a].l++; }
-    else if (as > hs) { t[m.a].w++; t[m.a].pts+=3; t[m.h].l++; }
+    if (hs > as)      { t[m.h].w++; t[m.h].pts += 3; t[m.a].l++; }
+    else if (as > hs) { t[m.a].w++; t[m.a].pts += 3; t[m.h].l++; }
     else              { t[m.h].d++; t[m.a].d++; t[m.h].pts++; t[m.a].pts++; }
   });
   return Object.entries(t)
-    .map(([name,s]) => ({name, ...s, gd:s.gf-s.ga}))
-    .sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf);
+    .map(([name, s]) => ({name, ...s, gd: s.gf - s.ga}))
+    .sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 }
 
+/* ─── RENDER GROUPS ─── */
 function renderGroups() {
   const el = document.getElementById('groups-container');
   el.innerHTML = '';
   state.groups.forEach((g, gi) => {
-    const standings = getStandings(g);
-    let rows = standings.map((s, i) => `
-      <tr class="${i<2?'qualify':''}">
-        <td><span class="pos-badge ${i===0?'pos-1':i===1?'pos-2':''}">${i+1}</span>${s.name}</td>
-        <td>${s.p}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td>
-        <td>${s.gd>0?'+':''}${s.gd}</td>
-        <td class="pts">${s.pts}</td>
-      </tr>`).join('');
+    const st = getStandings(g);
+    const played = g.matches.filter(m => m.played).length;
 
-    let matchRows = g.matches.map((m, mi) => {
-      if (m.played) return `
-        <div class="match-row">
-          <span class="match-team">${m.h}</span>
-          <span class="played-score">${m.hs} – ${m.as}</span>
-          <span class="match-team right">${m.a}</span>
-        </div>`;
-      return `
-        <div class="match-row">
-          <span class="match-team">${m.h}</span>
-          <div class="match-score">
-            <input class="score-input" type="number" min="0" max="20" id="g${gi}m${mi}h" placeholder="0">
-            <span class="score-sep">–</span>
-            <input class="score-input" type="number" min="0" max="20" id="g${gi}m${mi}a" placeholder="0">
-          </div>
-          <span class="match-team right">${m.a}</span>
-          <button class="save-btn" onclick="saveGroupMatch(${gi},${mi})">Save</button>
-        </div>`;
+    const rows = st.map((s, i) => {
+      const cls = i === 0 ? 'qualify-1' : i === 1 ? 'qualify-2' : '';
+      const chip = i === 0 ? 'p1' : i === 1 ? 'p2' : '';
+      return `<tr class="${cls}">
+        <td><span class="pos-chip ${chip}">${i+1}</span>${s.name}</td>
+        <td>${s.p}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td>
+        <td>${s.gd > 0 ? '+' : ''}${s.gd}</td>
+        <td class="pts">${s.pts}</td>
+      </tr>`;
     }).join('');
 
-    el.innerHTML += `
-      <div class="group-card">
-        <div class="group-header">
-          <span class="group-title">${g.name}</span>
-          <span style="font-size:0.7rem;letter-spacing:2px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;">
-            ${g.matches.filter(m=>m.played).length}/${g.matches.length} played
-          </span>
-        </div>
-        <div style="padding:10px 16px 4px">
-          <table class="standings">
-            <thead><tr><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-        <div class="matches-list">${matchRows}</div>
+    const matchRows = g.matches.map((m, mi) => {
+      if (m.played) return `<div class="match-row">
+        <span class="match-name">${m.h}</span>
+        <span class="played-score">${m.hs}–${m.as}</span>
+        <span class="match-name r">${m.a}</span>
       </div>`;
+      return `<div class="match-row">
+        <span class="match-name">${m.h}</span>
+        <div class="score-pair">
+          <input class="s-inp" type="number" min="0" max="20" id="g${gi}m${mi}h" placeholder="0">
+          <span class="s-sep">–</span>
+          <input class="s-inp" type="number" min="0" max="20" id="g${gi}m${mi}a" placeholder="0">
+        </div>
+        <span class="match-name r">${m.a}</span>
+        <button class="s-save" onclick="saveGroupMatch(${gi},${mi})">OK</button>
+      </div>`;
+    }).join('');
+
+    el.innerHTML += `<div class="group-card">
+      <div class="group-bg-letter">${g.letter}</div>
+      <div class="group-head">
+        <span class="group-name">${g.name}</span>
+        <span class="group-progress">${played}/${g.matches.length}</span>
+      </div>
+      <table class="standings">
+        <thead><tr>
+          <th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="matches-wrap">${matchRows}</div>
+    </div>`;
   });
 }
 
 function saveGroupMatch(gi, mi) {
   const hs = document.getElementById(`g${gi}m${mi}h`).value;
   const as = document.getElementById(`g${gi}m${mi}a`).value;
-  if (hs===''||as==='') return alert('Enter both scores!');
+  if (hs === '' || as === '') return alert('Enter both scores!');
   state.groups[gi].matches[mi].hs = hs;
   state.groups[gi].matches[mi].as = as;
   state.groups[gi].matches[mi].played = true;
-  renderGroups();
+  save(); flash(); renderGroups();
 }
 
+/* ─── KNOCKOUT SETUP ─── */
 function advanceToKnockout() {
-  // Top 2 from each of 4 groups = 8 players, clean QF bracket
-  // Seeding: A1 vs D2, B1 vs C2, C1 vs B2, D1 vs A2
   const q = state.groups.map(g => {
     const s = getStandings(g);
-    return { first: s[0].name, second: s[1].name };
+    return {first: s[0].name, second: s[1].name};
   });
   state.ko.qf = [
-    { h:q[0].first,  a:q[3].second, hs:'', as:'', played:false },
-    { h:q[1].first,  a:q[2].second, hs:'', as:'', played:false },
-    { h:q[2].first,  a:q[1].second, hs:'', as:'', played:false },
-    { h:q[3].first,  a:q[0].second, hs:'', as:'', played:false }
+    {h:q[0].first, a:q[3].second, hs:'', as:'', played:false},
+    {h:q[1].first, a:q[2].second, hs:'', as:'', played:false},
+    {h:q[2].first, a:q[1].second, hs:'', as:'', played:false},
+    {h:q[3].first, a:q[0].second, hs:'', as:'', played:false}
   ];
-  state.ko.sf   = [{h:'TBD',a:'TBD',hs:'',as:'',played:false},{h:'TBD',a:'TBD',hs:'',as:'',played:false}];
-  state.ko.final = { h:'TBD', a:'TBD', hs:'', as:'', played:false };
+  state.ko.sf = [{h:'TBD',a:'TBD',hs:'',as:'',played:false},{h:'TBD',a:'TBD',hs:'',as:'',played:false}];
+  state.ko.final = {h:'TBD',a:'TBD',hs:'',as:'',played:false};
   state.ko.champion = null;
-  renderKnockout();
-  showTab('knockout');
+  save(); renderKnockout(); showScreen('knockout');
 }
 
+/* ─── RENDER KNOCKOUT ─── */
 function renderKnockout() {
   const el = document.getElementById('knockout-container');
   if (!state.ko.qf.length) {
-    el.innerHTML = '<p class="tbd" style="text-align:center;padding:40px">Complete the group stage first.</p>';
+    el.innerHTML = `<div class="empty-state">
+      <span class="empty-icon">⚡</span>
+      <p class="empty-title">Not Started</p>
+      <p class="empty-sub">Complete the group stage and advance to unlock knockout</p>
+    </div>`;
     return;
   }
-  const qfHtml   = state.ko.qf.map((m,i) => koMatchCard(m,'qf',i,`QF ${i+1}`)).join('');
-  const sfHtml   = state.ko.sf.map((m,i) => koMatchCard(m,'sf',i,`SF ${i+1}`)).join('');
-  const finalHtml = state.ko.final
-    ? `<p class="round-label">⚽ Final</p><div class="ko-matches">${koMatchCard(state.ko.final,'final',0,'Final')}</div>` : '';
-  const champHtml = state.ko.champion ? `
-    <div class="champion-banner">
-      <span class="champion-trophy">🏆</span>
-      <h2>Champion</h2>
-      <div class="champion-name">${state.ko.champion}</div>
-    </div>` : '';
 
-  el.innerHTML = `
-    <p class="round-label">⚔️ Quarter-Finals</p>
-    <div class="ko-matches">${qfHtml}</div>
-    <p class="round-label">🥊 Semi-Finals</p>
-    <div class="ko-matches">${sfHtml}</div>
-    ${finalHtml}${champHtml}`;
+  const qfHtml = `<div class="ko-section">
+    <p class="round-title">Quarter-Finals</p>
+    <div class="ko-grid">${state.ko.qf.map((m,i) => koCard(m,'qf',i)).join('')}</div>
+  </div>`;
+
+  const sfReady = state.ko.sf[0].h !== 'TBD';
+  const sfHtml = `<div class="ko-section">
+    <p class="round-title">Semi-Finals</p>
+    <div class="ko-grid">${state.ko.sf.map((m,i) => koCard(m,'sf',i)).join('')}</div>
+  </div>`;
+
+  const finalReady = state.ko.final && state.ko.final.h !== 'TBD';
+  const finalHtml = finalReady ? `<div class="ko-section">
+    <p class="round-title">Final</p>
+    <div class="ko-grid single">${koCard(state.ko.final,'final',0)}</div>
+  </div>` : '';
+
+  const champHtml = state.ko.champion ? `<div class="ko-section">
+    <div class="champion-wrap">
+      <div class="champ-scanlines"></div>
+      <div class="champ-inner">
+        <span class="champ-trophy">🏆</span>
+        <div class="champ-eyebrow">Tournament Winner</div>
+        <div class="champ-name">${state.ko.champion}</div>
+        <div class="champ-sub">FC 26 Champion</div>
+      </div>
+    </div>
+  </div>` : '';
+
+  el.innerHTML = qfHtml + sfHtml + finalHtml + champHtml;
 }
 
-function koMatchCard(m, round, idx, label) {
+function koCard(m, round, idx) {
+  const label = round === 'qf' ? `QF ${idx+1}` : round === 'sf' ? `SF ${idx+1}` : 'Final';
+
   if (m.played) {
     const hs = parseInt(m.hs), as = parseInt(m.as);
-    const hw = hs>as, aw = as>hs;
-    return `
-      <div class="ko-match">
-        <p class="vs-line">${label}</p>
-        <div class="ko-match-teams">
-          <div class="ko-team-row">
-            <span class="ko-team-name${hw?' winner':''}">${hw?'🏅 ':''}${m.h}</span>
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:${hw?'var(--gold)':'var(--muted)'}">${m.hs}</span>
-          </div>
-          <div class="ko-team-row">
-            <span class="ko-team-name${aw?' winner':''}">${aw?'🏅 ':''}${m.a}</span>
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:${aw?'var(--gold)':'var(--muted)'}">${m.as}</span>
-          </div>
-        </div>
-      </div>`;
-  }
-  if (m.h==='TBD') {
-    return `<div class="ko-match"><p class="vs-line">${label}</p><p class="tbd" style="padding:12px 0">Awaiting previous round…</p></div>`;
-  }
-  return `
-    <div class="ko-match">
-      <p class="vs-line">${label}</p>
-      <div class="ko-match-teams">
-        <div class="ko-team-row">
-          <span class="ko-team-name">${m.h}</span>
-          <input class="ko-score-input" type="number" min="0" max="20" id="${round}${idx}h" placeholder="0">
-        </div>
-        <div class="ko-team-row">
-          <span class="ko-team-name">${m.a}</span>
-          <input class="ko-score-input" type="number" min="0" max="20" id="${round}${idx}a" placeholder="0">
-        </div>
+    const hw = hs > as, aw = as > hs;
+    return `<div class="ko-card">
+      <div class="ko-label">${label}</div>
+      <div class="ko-team ${hw?'won':aw?'lost':''}">
+        <span class="ko-pname">${m.h}</span>
+        <span class="ko-score-disp">${m.hs}</span>
       </div>
-      <button class="btn btn-primary btn-sm ko-save-btn" onclick="saveKoMatch('${round}',${idx})">Save Result</button>
+      <div class="ko-team ${aw?'won':hw?'lost':''}">
+        <span class="ko-pname">${m.a}</span>
+        <span class="ko-score-disp">${m.as}</span>
+      </div>
     </div>`;
+  }
+
+  if (m.h === 'TBD') {
+    return `<div class="ko-card">
+      <div class="ko-label">${label}</div>
+      <div class="ko-tbd">Awaiting results…</div>
+    </div>`;
+  }
+
+  return `<div class="ko-card">
+    <div class="ko-label">${label}</div>
+    <div class="ko-team">
+      <span class="ko-pname">${m.h}</span>
+      <input class="ko-inp" type="number" min="0" max="20" id="${round}${idx}h" placeholder="0">
+    </div>
+    <div class="ko-team">
+      <span class="ko-pname">${m.a}</span>
+      <input class="ko-inp" type="number" min="0" max="20" id="${round}${idx}a" placeholder="0">
+    </div>
+    <button class="ko-confirm" onclick="saveKo('${round}',${idx})">Confirm Result</button>
+  </div>`;
 }
 
-function saveKoMatch(round, idx) {
+function saveKo(round, idx) {
   const hs = document.getElementById(`${round}${idx}h`).value;
   const as = document.getElementById(`${round}${idx}a`).value;
-  if (hs===''||as==='') return alert('Enter both scores!');
-  if (parseInt(hs)===parseInt(as)) return alert('No draws in knockout! Use extra time/penalties.');
+  if (hs === '' || as === '') return alert('Enter both scores!');
+  if (parseInt(hs) === parseInt(as)) return alert('No draws in knockout! Decide via penalties.');
 
-  if (round==='qf') {
+  if (round === 'qf') {
     state.ko.qf[idx].hs = hs; state.ko.qf[idx].as = as; state.ko.qf[idx].played = true;
-    if (state.ko.qf.every(m=>m.played)) {
-      const w = state.ko.qf.map(m => parseInt(m.hs)>parseInt(m.as)?m.h:m.a);
-      // SF1: QF1 winner vs QF2 winner, SF2: QF3 winner vs QF4 winner
+    if (state.ko.qf.every(m => m.played)) {
+      const w = state.ko.qf.map(m => parseInt(m.hs) > parseInt(m.as) ? m.h : m.a);
       state.ko.sf[0] = {h:w[0], a:w[1], hs:'', as:'', played:false};
       state.ko.sf[1] = {h:w[2], a:w[3], hs:'', as:'', played:false};
     }
-  } else if (round==='sf') {
+  } else if (round === 'sf') {
     state.ko.sf[idx].hs = hs; state.ko.sf[idx].as = as; state.ko.sf[idx].played = true;
-    if (state.ko.sf.every(m=>m.played)) {
-      const w = state.ko.sf.map(m => parseInt(m.hs)>parseInt(m.as)?m.h:m.a);
+    if (state.ko.sf.every(m => m.played)) {
+      const w = state.ko.sf.map(m => parseInt(m.hs) > parseInt(m.as) ? m.h : m.a);
       state.ko.final = {h:w[0], a:w[1], hs:'', as:'', played:false};
     }
-  } else if (round==='final') {
+  } else if (round === 'final') {
     state.ko.final.hs = hs; state.ko.final.as = as; state.ko.final.played = true;
-    state.ko.champion = parseInt(hs)>parseInt(as) ? state.ko.final.h : state.ko.final.a;
+    state.ko.champion = parseInt(hs) > parseInt(as) ? state.ko.final.h : state.ko.final.a;
   }
-  renderKnockout();
+  save(); flash(); renderKnockout();
 }
 
-function showTab(name) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(`panel-${name}`).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t=>{
-    if(t.getAttribute('onclick').includes(`'${name}'`)) t.classList.add('active');
-  });
+function resetTournament() {
+  if (!confirm('Reset everything?')) return;
+  localStorage.removeItem(SAVE_KEY);
+  state = {players:Array.from({length:12},(_,i)=>`Player ${i+1}`),groups:[],ko:{qf:[],sf:[],final:null,champion:null}};
+  initSetup(); showScreen('setup');
 }
 
+/* ─── BOOT ─── */
+const saved = load();
 initSetup();
+if (saved && saved.groups && saved.groups.length) {
+  renderGroups();
+  if (saved.ko && saved.ko.qf && saved.ko.qf.length) {
+    renderKnockout(); showScreen('knockout');
+  } else {
+    showScreen('groups');
+  }
+}
 </script>
 </body>
 </html>
