@@ -237,6 +237,9 @@ body::after {
   text-transform: uppercase;
 }
 .player-row input::placeholder { color: var(--muted); font-weight: 400; text-transform: none; }
+#player-count-input::-webkit-outer-spin-button,
+#player-count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#player-count-input { -moz-appearance: textfield; }
 
 /* ══════════════════════════════
    BUTTONS
@@ -680,7 +683,15 @@ body::after {
         <span class="bright">Club</span><br>
         <span class="dim">Is Yours</span>
       </h1>
-      <p class="header-sub">12 Players &bull; Group Stage + Knockout</p>
+      <p class="header-sub">Group Stage + Knockout</p>
+    </div>
+
+    <p class="section-label">Players (2&ndash;20)</p>
+    <div class="setup-list" style="margin-bottom:14px;">
+      <div class="player-row">
+        <span class="player-num">#</span>
+        <input type="number" id="player-count-input" min="2" max="20" step="1" value="12" inputmode="numeric" onchange="onPlayerCountChange(this.value)">
+      </div>
     </div>
 
     <p class="section-label">Squad</p>
@@ -759,15 +770,17 @@ body::after {
 
 <script>
 /* ─── PERSISTENCE ─── */
-const SAVE_KEY = 'fc_tournament_v2';
+const SAVE_KEY = 'fc_tournament_v3';
 const save = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){} };
 const load = () => { try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 
 /* ─── STATE ─── */
 let state = load() || {
+  playerCount: 12,
   players: Array.from({length:12}, (_,i) => `Player ${i+1}`),
   groups: [],
-  ko: { qf:[], sf:[], final:null, champion:null }
+  numGroups: 4,
+  ko: { started:false, qf:[], sf:[], final:null, champion:null }
 };
 
 /* ─── FLASH ─── */
@@ -787,9 +800,12 @@ function showScreen(name) {
 
 /* ─── SETUP ─── */
 function initSetup() {
+  const countInput = document.getElementById('player-count-input');
+  if (countInput) countInput.value = state.playerCount;
+
   const el = document.getElementById('player-inputs');
   el.innerHTML = '';
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < state.playerCount; i++) {
     el.innerHTML += `<div class="player-row">
       <span class="player-num">${i+1}</span>
       <input type="text" id="p${i}" placeholder="player ${i+1}" value="${state.players[i]}" autocomplete="off" spellcheck="false">
@@ -798,10 +814,25 @@ function initSetup() {
 }
 
 function readPlayers() {
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < state.playerCount; i++) {
     const v = document.getElementById(`p${i}`).value.trim();
     state.players[i] = v || `Player ${i+1}`;
   }
+}
+
+function onPlayerCountChange(val) {
+  readPlayers();
+  let n = parseInt(val, 10);
+  if (isNaN(n)) n = state.playerCount;
+  n = Math.min(20, Math.max(2, n));
+  if (n > state.players.length) {
+    for (let i = state.players.length; i < n; i++) state.players.push(`Player ${i+1}`);
+  } else {
+    state.players.length = n;
+  }
+  state.playerCount = n;
+  save();
+  initSetup();
 }
 
 function shuffle(arr) {
@@ -823,15 +854,23 @@ function roundRobin(players) {
 
 function generateTournament() {
   readPlayers();
+  const n = state.playerCount;
+  const numGroups = n <= 3 ? 1 : n <= 7 ? 2 : 4;
+  const letters = ['A','B','C','D'];
+  const base = Math.floor(n / numGroups);
+  const extra = n % numGroups;
   const s = shuffle(state.players);
-  state.groups = [
-    {name:'Group A', letter:'A', players:s.slice(0,3),  matches:[]},
-    {name:'Group B', letter:'B', players:s.slice(3,6),  matches:[]},
-    {name:'Group C', letter:'C', players:s.slice(6,9),  matches:[]},
-    {name:'Group D', letter:'D', players:s.slice(9,12), matches:[]}
-  ];
+
+  state.groups = [];
+  let idx = 0;
+  for (let g = 0; g < numGroups; g++) {
+    const size = base + (g < extra ? 1 : 0);
+    state.groups.push({name:`Group ${letters[g]}`, letter:letters[g], players:s.slice(idx, idx+size), matches:[]});
+    idx += size;
+  }
   state.groups.forEach(g => g.matches = roundRobin(g.players));
-  state.ko = {qf:[], sf:[], final:null, champion:null};
+  state.numGroups = numGroups;
+  state.ko = {started:false, qf:[], sf:[], final:null, champion:null};
   save(); renderGroups(); showScreen('groups');
 }
 
@@ -924,22 +963,36 @@ function advanceToKnockout() {
     const s = getStandings(g);
     return {first: s[0].name, second: s[1].name};
   });
-  state.ko.qf = [
-    {h:q[0].first, a:q[3].second, hs:'', as:'', played:false},
-    {h:q[1].first, a:q[2].second, hs:'', as:'', played:false},
-    {h:q[2].first, a:q[1].second, hs:'', as:'', played:false},
-    {h:q[3].first, a:q[0].second, hs:'', as:'', played:false}
-  ];
-  state.ko.sf = [{h:'TBD',a:'TBD',hs:'',as:'',played:false},{h:'TBD',a:'TBD',hs:'',as:'',played:false}];
-  state.ko.final = {h:'TBD',a:'TBD',hs:'',as:'',played:false};
-  state.ko.champion = null;
+
+  const ko = {started:true, qf:[], sf:[], final:null, champion:null};
+
+  if (state.numGroups === 1) {
+    ko.final = {h:q[0].first, a:q[0].second, hs:'', as:'', played:false};
+  } else if (state.numGroups === 2) {
+    ko.sf = [
+      {h:q[0].first, a:q[1].second, hs:'', as:'', played:false},
+      {h:q[1].first, a:q[0].second, hs:'', as:'', played:false}
+    ];
+    ko.final = {h:'TBD', a:'TBD', hs:'', as:'', played:false};
+  } else {
+    ko.qf = [
+      {h:q[0].first, a:q[3].second, hs:'', as:'', played:false},
+      {h:q[1].first, a:q[2].second, hs:'', as:'', played:false},
+      {h:q[2].first, a:q[1].second, hs:'', as:'', played:false},
+      {h:q[3].first, a:q[0].second, hs:'', as:'', played:false}
+    ];
+    ko.sf = [{h:'TBD',a:'TBD',hs:'',as:'',played:false},{h:'TBD',a:'TBD',hs:'',as:'',played:false}];
+    ko.final = {h:'TBD', a:'TBD', hs:'', as:'', played:false};
+  }
+
+  state.ko = ko;
   save(); renderKnockout(); showScreen('knockout');
 }
 
 /* ─── RENDER KNOCKOUT ─── */
 function renderKnockout() {
   const el = document.getElementById('knockout-container');
-  if (!state.ko.qf.length) {
+  if (!state.ko.started) {
     el.innerHTML = `<div class="empty-state">
       <span class="empty-icon">⚡</span>
       <p class="empty-title">Not Started</p>
@@ -948,16 +1001,15 @@ function renderKnockout() {
     return;
   }
 
-  const qfHtml = `<div class="ko-section">
+  const qfHtml = state.ko.qf.length ? `<div class="ko-section">
     <p class="round-title">Quarter-Finals</p>
     <div class="ko-grid">${state.ko.qf.map((m,i) => koCard(m,'qf',i)).join('')}</div>
-  </div>`;
+  </div>` : '';
 
-  const sfReady = state.ko.sf[0].h !== 'TBD';
-  const sfHtml = `<div class="ko-section">
+  const sfHtml = state.ko.sf.length ? `<div class="ko-section">
     <p class="round-title">Semi-Finals</p>
     <div class="ko-grid">${state.ko.sf.map((m,i) => koCard(m,'sf',i)).join('')}</div>
-  </div>`;
+  </div>` : '';
 
   const finalReady = state.ko.final && state.ko.final.h !== 'TBD';
   const finalHtml = finalReady ? `<div class="ko-section">
@@ -1049,7 +1101,13 @@ function saveKo(round, idx) {
 function resetTournament() {
   if (!confirm('Reset everything?')) return;
   localStorage.removeItem(SAVE_KEY);
-  state = {players:Array.from({length:12},(_,i)=>`Player ${i+1}`),groups:[],ko:{qf:[],sf:[],final:null,champion:null}};
+  state = {
+    playerCount: 12,
+    players: Array.from({length:12},(_,i)=>`Player ${i+1}`),
+    groups: [],
+    numGroups: 4,
+    ko: {started:false, qf:[], sf:[], final:null, champion:null}
+  };
   initSetup(); showScreen('setup');
 }
 
@@ -1058,7 +1116,7 @@ const saved = load();
 initSetup();
 if (saved && saved.groups && saved.groups.length) {
   renderGroups();
-  if (saved.ko && saved.ko.qf && saved.ko.qf.length) {
+  if (saved.ko && saved.ko.started) {
     renderKnockout(); showScreen('knockout');
   } else {
     showScreen('groups');
